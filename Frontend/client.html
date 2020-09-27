@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+	<head><meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<title>Table</title>
+	<link href="https://cdn.jsdelivr.net/npm/layui-src@2.4.5/dist/css/layui.css" rel="stylesheet"/>
+	<link href="http://www.magicalcoder.com/magicaldrag/assets/drag/ui/magicalcoder/1.1.0/magicalcoder.css" rel="stylesheet"/>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/json3/3.3.3/json3.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/4.6.0/echarts.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/4.6.0/extension/dataTool.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/layui-src@2.4.5/dist/layui.all.js"></script>
+	<script src="http://www.magicalcoder.com/assets/js/common.js"></script>
+	<script src="http://www.magicalcoder.com/magicaldrag/assets/drag/ui/magicalcoder/1.1.0/magicalcoder.js"></script>
+	<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+	</head>
+	<body>
+		<table class="layui-hide" id="test" lay-filter="test"></table>
+		
+	</body>
+
+	<script>
+	layui.use('table', function(){
+	  var table = layui.table;
+	  
+	  table.render({
+	    elem: '#test'
+	    ,url:'http://45.113.234.137:10241/tickets/customer'
+	    ,cellMinWidth: 80 //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+	    ,cols: [[
+	      {field:'case_id', title: 'ID', sort: true}
+	      ,{field:'time', title: 'Time'}
+	      ,{field:'app_name', title: 'Application'}
+	      ,{field:'issue_type', title: 'IssueType'}
+	      ,{field:'impact_rank', title: 'ImpactRank'} //minWidth：局部定义当前单元格的最小宽度，layui 2.2.1 新增
+	      ,{field:'description', title: 'Description'}
+	      ,{field:'assign', title: 'Assign_to_who'}
+	      ,{field:'status', title: 'Status'}
+	      ,{fixed: 'right', width:150, align:'center', toolbar: '#barDemo',title:"Operation"} 
+	    ]]
+	  });
+	
+		table.on('tool(test)', function(obj){ //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
+		  var data = obj.data; //获得当前行数据
+		  var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+		  var tr = obj.tr; //获得当前行 tr 的 DOM 对象（如果有的话）
+		 
+		  if(layEvent === 'del'){ //删除
+
+		    layer.confirm('Do you want delete this document?',{btn:['Yes','No']},function(index){
+		      obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+		      layer.close(index);
+		      //向服务端发送删除指令
+			  $.ajax({
+			  	type: "get",
+			      url: "http://45.113.234.137:10241/tickets/delete",
+			      data: {
+			  		  "case_id": data.case_id
+			  		 },
+			  	dataType: 'json',
+			  	success: function (data) {
+			   
+			  	 if (data.code == '0') {
+			  		 // obj.del();
+			  		 layer.close(index);
+			  		 layer.msg(data.msg, {icon: 1, time: 2000, shade: 0.1});
+			  		 console.log(table);
+			  		 
+			  	 } else {
+			  			 layer.close(index);
+			  			 layer.alert("Delete Error, Please try again!", {
+			  				 icon: 2, title: 'Error'
+			  			});
+			  			 return;
+			  	 }
+			  	 },
+			  	 error: function () {
+			  	}
+			  });
+			  
+		    });
+		  } else if(layEvent == 'edit'){ //编辑
+		    //do something
+		    layer.confirm('Have you resolved this issue?', {btn:['Yes','No']}, function(index){
+		    $.ajax({
+				type: "get",
+		        url: "http://45.113.234.137:10241/tickets/resolve",
+		        data: {
+					  "case_id": data.case_id
+					 },
+				dataType: 'json',
+				success: function (data) {
+ 
+				 if (data.code == '0') {
+					 // obj.del();
+					 layer.close(index);
+					 layer.msg(data.msg, {icon: 1, time: 2000, shade: 0.1});
+					 console.log(table);
+					
+				 } else {
+						 layer.close(index);
+						 layer.alert("Update Error, Please try again!", {
+							 icon: 2, title: 'Error'
+						});
+						 return;
+				 }
+				 },
+				 error: function () {
+				}
+			});
+			
+			
+			
+		      //向服务端发送删除指令
+		    });
+		    //同步更新缓存对应的值
+		    obj.update({
+		      username: '123'
+		      ,title: 'xxx'
+		    });
+		  }
+		});
+		});
+	</script>
+	<script type="text/html" id="barDemo">
+	  <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">Delete</a>
+	</script>
+</html>
