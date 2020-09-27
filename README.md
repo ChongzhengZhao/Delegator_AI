@@ -18,6 +18,9 @@ Delegator AI will help the organisation by automatically assigning the task(tick
 
 ## Web Application Dashboard
 Please navigate to http://delegator.superb.today/
+
 Customer demo account/password: demo/demo
+
 Manager/Organization demo account/password: admin/admin
+
 Demonstration video URL: https://www.youtube.com/watch?v=2S9aZoeSiyE
